@@ -9,4 +9,16 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<PackageId>ChkRestorer</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>air2921</Authors>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<RepositoryUrl>https://github.com/air2921/ChkRestorer</RepositoryUrl>
+		<PackageTags>mime, extension, extensions, file, files, CHK, chk, restore, restorer</PackageTags>
+		<Description>
+			.NET library for determening original file extension from .CHK extension
+		</Description>
+	</PropertyGroup>
+
 </Project>
