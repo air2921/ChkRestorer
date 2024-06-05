@@ -19,13 +19,13 @@ jobs:
         dotnet-version: 8.*
 
     - name: Restore dependencies
-      run: dotnet restore ChkRestorer\ChkRestorer.csproj
+      run: dotnet restore ChkRestorer.csproj
 
     - name: Build the project
-      run: dotnet build ChkRestorer\ChkRestorer.csproj --configuration Release --no-restore
+      run: dotnet build ChkRestorer.csproj --configuration Release --no-restore
 
     - name: Pack the project
-      run: dotnet pack ChkRestorer\ChkRestorer.csproj --configuration Release --no-build --output ./nupkg
+      run: dotnet pack ChkRestorer.csproj --configuration Release --no-build --output ./nupkg
 
     - name: Publish NuGet package
       env:
