@@ -1,16 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 
 namespace ChkRestorer
 {
     public static class Determinant
     {
-        private static byte[] GetSourceSignature(string filePath)
+        private static byte[] GetSourceSignature(string filePath, int size = 36)
         {
             try
             {
-                byte[] fileHeader = new byte[64];
+                byte[] fileHeader = new byte[size];
 
                 using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 fs.Read(fileHeader, 0, fileHeader.Length);
@@ -23,9 +22,9 @@ namespace ChkRestorer
             }
         }
 
-        private static byte[] GetSourceSignature(Stream stream)
+        private static byte[] GetSourceSignature(Stream stream, int size = 36)
         {
-            byte[] fileHeader = new byte[64];
+            byte[] fileHeader = new byte[size];
 
             stream.Read(fileHeader, 0, fileHeader.Length);
             return fileHeader;
@@ -53,13 +52,25 @@ namespace ChkRestorer
         {
             foreach (var signature in Signature.SignatureExtensions.Keys)
             {
-                if (header.Length >= signature.Length && header.Take(signature.Length).SequenceEqual(signature))
+                if (header.Length >= signature.Length)
                 {
-                    return Signature.SignatureExtensions[signature];
+                    bool match = true;
+                    for (int i = 0; i < signature.Length; i++)
+                    {
+                        if (!header[i].Equals(signature[i]))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match)
+                    {
+                        return Signature.SignatureExtensions[signature];
+                    }
                 }
             }
 
-            return null; 
+            return null;
         }
 
         public static void ChangeSourceExtensionRange(string folderPath, string targetPath, bool autoCreate = true)
