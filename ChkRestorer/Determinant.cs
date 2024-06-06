@@ -59,7 +59,7 @@ namespace ChkRestorer
                 }
             }
 
-            return null; 
+            return null;
         }
 
         public static void ChangeSourceExtensionRange(string folderPath, string targetPath, bool autoCreate = true)
