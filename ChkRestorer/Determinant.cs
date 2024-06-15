@@ -5,29 +5,33 @@ namespace ChkRestorer
 {
     public static class Determinant
     {
-        private static byte[] GetSourceSignature(string filePath, int size = 36)
+        private static byte[] GetSourceSignature<T>(T src, int size = 32) where T : notnull
         {
             try
             {
-                byte[] fileHeader = new byte[size];
+                if (!src.GetType().Equals(typeof(Stream)) || !src.GetType().Equals(typeof(string)))
+                    throw new NotSupportedException("Not supported generic type");
 
-                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                fs.Read(fileHeader, 0, fileHeader.Length);
+                var fileHeader = new byte[size];
 
-                return fileHeader;
+                if (src is Stream stream)
+                {
+                    stream.Read(fileHeader, 0, fileHeader.Length);
+                    return fileHeader;
+                }
+                if (src is string filePath)
+                {
+                    using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    fs.Read(fileHeader, 0, fileHeader.Length);
+                    return fileHeader;
+                }
+
+                throw new NotSupportedException("Not supported generic type");
             }
-            catch (FileNotFoundException)
+            catch (Exception)
             {
                 throw;
             }
-        }
-
-        private static byte[] GetSourceSignature(Stream stream, int size = 36)
-        {
-            byte[] fileHeader = new byte[size];
-
-            stream.Read(fileHeader, 0, fileHeader.Length);
-            return fileHeader;
         }
 
         private static void ChangeExtension(string filePath, string targetPath, string extension)
@@ -120,26 +124,11 @@ namespace ChkRestorer
             }
         }
 
-        public static string GetExtension(string filePath)
+        public static string GetExtension<T>(T src) where T : notnull
         {
             try
             {
-                var header = GetSourceSignature(filePath);
-                var extension = CompareExtension(header) ?? throw new NotSupportedException("Could not match file extension");
-
-                return extension;
-            }
-            catch (FileNotFoundException)
-            {
-                throw;
-            }
-        }
-
-        public static string GetExtension(Stream stream)
-        {
-            try
-            {
-                var header = GetSourceSignature(stream);
+                var header = GetSourceSignature(src);
                 var extension = CompareExtension(header) ?? throw new NotSupportedException("Could not match file extension");
 
                 return extension;
