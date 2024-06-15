@@ -1,34 +1,34 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 
 namespace ChkRestorer
 {
     public static class Determinant
     {
-        private static byte[] GetSourceSignature(string filePath)
+        private static byte[] GetSourceSignature<T>(T src, int size = 32) where T : notnull
         {
             try
             {
-                byte[] fileHeader = new byte[64];
+                var fileHeader = new byte[size];
 
-                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                fs.Read(fileHeader, 0, fileHeader.Length);
+                if (src is Stream stream)
+                {
+                    stream.Read(fileHeader, 0, fileHeader.Length);
+                    return fileHeader;
+                }
+                if (src is string filePath)
+                {
+                    using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    fs.Read(fileHeader, 0, fileHeader.Length);
+                    return fileHeader;
+                }
 
-                return fileHeader;
+                throw new NotSupportedException("Not supported generic type");
             }
-            catch (FileNotFoundException)
+            catch (Exception)
             {
                 throw;
             }
-        }
-
-        private static byte[] GetSourceSignature(Stream stream)
-        {
-            byte[] fileHeader = new byte[64];
-
-            stream.Read(fileHeader, 0, fileHeader.Length);
-            return fileHeader;
         }
 
         private static void ChangeExtension(string filePath, string targetPath, string extension)
@@ -53,9 +53,21 @@ namespace ChkRestorer
         {
             foreach (var signature in Signature.SignatureExtensions.Keys)
             {
-                if (header.Length >= signature.Length && header.Take(signature.Length).SequenceEqual(signature))
+                if (header.Length >= signature.Length)
                 {
-                    return Signature.SignatureExtensions[signature];
+                    bool match = true;
+                    for (int i = 0; i < signature.Length; i++)
+                    {
+                        if (!header[i].Equals(signature[i]))
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match)
+                    {
+                        return Signature.SignatureExtensions[signature];
+                    }
                 }
             }
 
@@ -109,26 +121,11 @@ namespace ChkRestorer
             }
         }
 
-        public static string GetExtension(string filePath)
+        public static string GetExtension<T>(T src) where T : notnull
         {
             try
             {
-                var header = GetSourceSignature(filePath);
-                var extension = CompareExtension(header) ?? throw new NotSupportedException("Could not match file extension");
-
-                return extension;
-            }
-            catch (FileNotFoundException)
-            {
-                throw;
-            }
-        }
-
-        public static string GetExtension(Stream stream)
-        {
-            try
-            {
-                var header = GetSourceSignature(stream);
+                var header = GetSourceSignature(src);
                 var extension = CompareExtension(header) ?? throw new NotSupportedException("Could not match file extension");
 
                 return extension;
