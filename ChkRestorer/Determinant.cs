@@ -9,9 +9,6 @@ namespace ChkRestorer
         {
             try
             {
-                if (!src.GetType().Equals(typeof(Stream)) || !src.GetType().Equals(typeof(string)))
-                    throw new NotSupportedException("Not supported generic type");
-
                 var fileHeader = new byte[size];
 
                 if (src is Stream stream)
